@@ -8,18 +8,13 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-/**
- * Note: This project doesn't use GraphQL
- * However, https://curse.nikky.moe/graphql does use
- *      graphql in the background
- */
-public class NikkyGraphQL {
+public class NetworkTools {
 
     /**
-     *
+     * Note: This project doesn't use GraphQL
+     * However, https://curse.nikky.moe/graphql does use
+     *      graphql in the background
      * @param slug - Slug component from CurseForge link
      * @return ProjectID - ProjectID needed for CurseForgeAPI
      */
@@ -44,6 +39,23 @@ public class NikkyGraphQL {
         {
             return response.substring(indexOfID+6, response.indexOf(",", indexOfID));
         }
+    }
+
+    /**
+     *
+     * @param projectID - value identifying which curseforge project we are looking at
+     * @param fileID - value identifying the specific file that you wish to download
+     * @return
+     */
+    public static String getCurseDownloadURL(String projectID, String fileID)
+    {
+        Client client = ClientBuilder.newClient();
+        String URL = "https://addons-ecs.forgesvc.net/api/v2/addon/"+projectID+"/file/"+fileID+"/download-url";
+        System.out.println(URL);
+        WebTarget target = client.target(URL);
+        String response = target.request()
+                .get(String.class);
+        return response;
     }
 
 }
