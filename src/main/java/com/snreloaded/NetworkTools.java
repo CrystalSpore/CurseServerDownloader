@@ -1,13 +1,16 @@
 package com.snreloaded;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Produces;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import java.util.Scanner;
 
 public class NetworkTools {
 
@@ -18,9 +21,6 @@ public class NetworkTools {
      * @param slug - Slug component from CurseForge link
      * @return ProjectID - ProjectID needed for CurseForgeAPI
      */
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public static String slugToProjectID(String slug)
     {
 
@@ -51,11 +51,45 @@ public class NetworkTools {
     {
         Client client = ClientBuilder.newClient();
         String URL = "https://addons-ecs.forgesvc.net/api/v2/addon/"+projectID+"/file/"+fileID+"/download-url";
-        System.out.println(URL);
+        //System.out.println(URL);
         WebTarget target = client.target(URL);
         String response = target.request()
                 .get(String.class);
         return response;
+    }
+
+    /**
+     *
+     * @param projectID - modpack project ID
+     * @return fileID - serverFileID for download url
+     * @throws ParseException
+     */
+    public static String getFileList(String projectID) throws ParseException {
+        Client client = ClientBuilder.newClient();
+        String URL = "https://addons-ecs.forgesvc.net/api/v2/addon/"+projectID+"/files";
+        //System.out.println(URL);
+        WebTarget target = client.target(URL);
+        String response = target.request()
+                .get(String.class);
+        //System.out.println(response);
+        JSONArray jsonArray = (JSONArray) (new JSONParser().parse(response));
+
+
+
+        System.out.println("Versions: ");
+        System.out.println("NOTE! Versions are not in order. Please verify that you are choosing the correct version.");
+        for ( int i = 1; i <= jsonArray.size(); i++ )
+        {
+            JSONObject curJSON = (JSONObject) jsonArray.get(i-1);
+            String fileName = ((String) curJSON.get("fileName"));
+            String version = fileName.substring(0,fileName.length()-4);
+            System.out.println( "\t" + String.format("%2d", i) + ": " + version);
+        }
+        System.out.println("NOTE! Versions are not in order. Please verify that you are choosing the correct version.");
+        System.out.println("What version do you wish to download?");
+        Scanner kin = new Scanner(System.in);
+        int option = Integer.parseInt(kin.nextLine());
+        return ((Long)((JSONObject)jsonArray.get(option-1)).get("serverPackFileId")).toString();
     }
 
 }
