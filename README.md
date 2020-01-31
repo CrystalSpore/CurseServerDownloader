@@ -9,4 +9,8 @@ With this tool, the goal is to once again make it easy for server admins to inst
 
 ## Usage
 
-Not fully implemented yet. However, the goal is to have the run be `CurseServerDownloader [link]` and get the latest zip downloaded into the current directory.
+Current usage allows for a full or partial server download url from CurseForge to be entered in as a commandline argument.
+
+`java -jar CurseServerDownloader <link>`
+
+If a full download url is provided, then the exact file gets downloaded. If a partial url is provided, then the user gets to select which version they wish to download (NOTE: versions are not in order. Please verify which version you wish to download.)
