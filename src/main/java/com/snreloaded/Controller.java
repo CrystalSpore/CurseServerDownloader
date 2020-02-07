@@ -3,8 +3,6 @@ package com.snreloaded;
 import org.json.simple.parser.ParseException;
 
 import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
