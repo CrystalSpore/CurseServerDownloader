@@ -4,6 +4,7 @@ import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +39,12 @@ public class Controller {
         String packSlug = matcher.group(1);
 
         String projectID = NetworkTools.slugToProjectID(packSlug);
-        //System.out.println("Project ID: " + projectID);
+
+        if ( projectID == null || projectID == "" )
+        {
+            System.err.println("Project ID could not be found. Verify that the CurseForge URL was entered correctly.");
+            return;
+        }
 
         String fileID = matcher.group(2);
 
@@ -61,24 +67,12 @@ public class Controller {
 
         String downloadURL = NetworkTools.getCurseDownloadURL(projectID, fileID);
 
-        String zipName = downloadURL.substring(41).replace(" ", "_");
+        String[] splitURL = downloadURL.split("/");
+
+        String zipName = "./" + splitURL[splitURL.length-1];
 
         downloadURL = downloadURL.replace(" ", "%20");
-        //System.out.println("URL: " + downloadURL);
 
-        try
-        {
-            BufferedInputStream inputStream = new BufferedInputStream(new URL(downloadURL).openStream());
-            FileOutputStream fileOS = new FileOutputStream("./"+zipName);
-            System.out.println("Attempting to download to: " + new File(".").getCanonicalPath() + "/");
-            System.out.println("\n\tErrors will be printed below. Hopefully in future versions this will be fixed.\n");
-            byte data[] = new byte[1024];
-            int byteContent;
-            while ((byteContent = inputStream.read(data, 0, 1024)) != -1) {
-                fileOS.write(data, 0, byteContent);
-            }
-            System.out.println("At this point, the file should be downloaded. Any errors printed now are to be reported!");
-        } catch (IOException e) {
-        }
+        NetworkTools.saveFile(downloadURL, zipName);
     }
 }
