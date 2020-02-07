@@ -16,13 +16,14 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class NetworkTools {
@@ -34,8 +35,29 @@ public class NetworkTools {
      * @param slug - Slug component from CurseForge link
      * @return ProjectID - ProjectID needed for CurseForgeAPI
      */
-    public static String slugToProjectID(String slug)
-    {
+    public static String slugToProjectID(String slug) throws IOException {
+        File csd_cache = new File(System.getProperty("user.home")+"/"+".csd_cache");
+
+        if ( csd_cache.exists() )
+        {
+            HashMap<String, String> cacheMap = new HashMap<>();
+            Scanner fin = new Scanner(new FileInputStream(csd_cache));
+            while ( fin.hasNext() )
+            {
+                String line = fin.nextLine();
+                String[] splitLine = line.split(":");
+                cacheMap.put(splitLine[0],splitLine[1]);
+            }
+
+            if ( cacheMap.containsKey(slug) )
+            {
+                return cacheMap.get(slug);
+            }
+        }
+        else
+        {
+            csd_cache.createNewFile();
+        }
 
         String body = "{\"query\":\"{addons(slug:\\\""+slug+"\\\"){id slug dateCreated latestFiles {gameVersion}}}\"}";
         Client client = ClientBuilder.newClient();
@@ -45,13 +67,19 @@ public class NetworkTools {
                                 .post(Entity.json(body), String.class);
         int indexOfID = response.indexOf("id");
         client.close();
+        String projectID = response.substring(indexOfID+6, response.indexOf(",", indexOfID));
+        try {
+            Files.write(Paths.get(csd_cache.getAbsolutePath()), (slug+":"+projectID+"\n").getBytes(), StandardOpenOption.APPEND);
+        }catch (IOException e) {
+            //exception handling left as an exercise for the reader
+        }
         if (indexOfID == -1)
         {
             return "";
         }
         else
         {
-            return response.substring(indexOfID+6, response.indexOf(",", indexOfID));
+            return projectID;
         }
     }
 

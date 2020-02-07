@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 public class Controller {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         if (args.length < 1)
         {
