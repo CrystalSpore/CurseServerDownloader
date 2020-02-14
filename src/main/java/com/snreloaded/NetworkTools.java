@@ -84,7 +84,7 @@ public class NetworkTools {
         else
         {
             boolean exitLoop = false;
-            for ( int i = 0; i <= 20; i++ )
+            for ( int i = 16; i >= 0; i-- )
             {
                 System.out.println("Searching Version 1."+i);
                 for ( int j = 0; j <= 10; j++ )
