@@ -173,7 +173,7 @@ public class NetworkTools {
         Scanner kin = new Scanner(System.in);
         int option = Integer.parseInt(kin.nextLine());
         client.close();
-        System.out.println(( ((JSONObject)jsonArray.get(option-1)).get("serverPackFileId") ));
+        //System.out.println(( ((JSONObject)jsonArray.get(option-1)).get("serverPackFileId") ));
         if ( ( ((JSONObject)jsonArray.get(option-1)).get("serverPackFileId") ) == null)
         {
             return null;
