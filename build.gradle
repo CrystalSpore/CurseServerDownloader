@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.snreloaded'
-version '1.1'
+version '1.2'
 
 sourceCompatibility = 1.8
 
@@ -34,6 +34,6 @@ dependencies {
 
     // tool for terminal user interface
     // https://mvnrepository.com/artifact/com.googlecode.lanterna/lanterna
-    compile group: 'com.googlecode.lanterna', name: 'lanterna', version: '3.0.2'
+    //compile group: 'com.googlecode.lanterna', name: 'lanterna', version: '3.0.2'
 
 }

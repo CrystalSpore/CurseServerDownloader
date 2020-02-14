@@ -64,21 +64,61 @@ public class NetworkTools {
         String response = target.request(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON)
                                 .post(Entity.json(body), String.class);
+        //System.out.println(response);
         int indexOfID = response.indexOf("id");
         client.close();
-        String projectID = response.substring(indexOfID+6, response.indexOf(",", indexOfID));
-        try {
-            Files.write(Paths.get(csd_cache.getAbsolutePath()), (slug+":"+projectID+"\n").getBytes(), StandardOpenOption.APPEND);
-        }catch (IOException e) {
-            //exception handling left as an exercise for the reader
-        }
-        if (indexOfID == -1)
-        {
-            return "";
+        //System.out.println(indexOfID);
+        if ( indexOfID != -1) {
+            String projectID = response.substring(indexOfID + 6, response.indexOf(",", indexOfID));
+            try {
+                Files.write(Paths.get(csd_cache.getAbsolutePath()), (slug + ":" + projectID + "\n").getBytes(), StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (indexOfID == -1) {
+                return "";
+            } else {
+                return projectID;
+            }
         }
         else
         {
-            return projectID;
+            boolean exitLoop = false;
+            for ( int i = 0; i <= 20; i++ )
+            {
+                System.out.println("Searching Version 1."+i);
+                for ( int j = 0; j <= 10; j++ )
+                {
+                    String version = "1."+i+"."+j;
+                    client = ClientBuilder.newClient();
+                    target = client.target("https://addons-ecs.forgesvc.net/api/v2/addon/search?categoryId=0&gameId=432&gameVersion="+version+"&index=0&pageSize=255&searchFilter="+slug+"&sectionId=4471&sort=0");
+                    response = target.request(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON)
+                            .get(String.class);
+                    client.close();
+                    if ( response.equals("[]") )
+                    {
+                        continue;
+                    }
+                    //System.out.println(response);
+                    indexOfID = response.indexOf("id");
+                    //System.out.println(indexOfID);
+                    if ( indexOfID != -1) {
+                        String projectID = response.substring(indexOfID + 4, response.indexOf(",", indexOfID));
+                        try {
+                            Files.write(Paths.get(csd_cache.getAbsolutePath()), (slug + ":" + projectID + "\n").getBytes(), StandardOpenOption.APPEND);
+                        } catch (IOException e) {
+                            //exception handling left as an exercise for the reader
+                        }
+                        if (indexOfID == -1) {
+                            return "";
+                        } else {
+                            return projectID;
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 
@@ -114,7 +154,7 @@ public class NetworkTools {
         WebTarget target = client.target(URL);
         String response = target.request()
                 .get(String.class);
-        //System.out.println(response);
+        System.out.println(response);
         JSONArray jsonArray = (JSONArray) (new JSONParser().parse(response));
 
 
@@ -133,6 +173,11 @@ public class NetworkTools {
         Scanner kin = new Scanner(System.in);
         int option = Integer.parseInt(kin.nextLine());
         client.close();
+        System.out.println(( ((JSONObject)jsonArray.get(option-1)).get("serverPackFileId") ));
+        if ( ( ((JSONObject)jsonArray.get(option-1)).get("serverPackFileId") ) == null)
+        {
+            return null;
+        }
         return ((Long)((JSONObject)jsonArray.get(option-1)).get("serverPackFileId")).toString();
     }
 

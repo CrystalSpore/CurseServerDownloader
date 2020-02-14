@@ -59,7 +59,8 @@ public class Controller {
 
             if (fileID == null || fileID == "")
             {
-                System.err.println("Was unable to find the fileID.");
+                System.err.println("Was unable to find the fileID. The CurseForge API has no Server File association.");
+                return;
             }
         }
 
