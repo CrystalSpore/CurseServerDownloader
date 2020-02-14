@@ -1,5 +1,10 @@
 package com.snreloaded;
 
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.util.Zip4jUtil;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -22,8 +27,7 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.util.*;
 
 public class NetworkTools {
 
@@ -147,23 +151,22 @@ public class NetworkTools {
      * @return fileID - serverFileID for download url
      * @throws ParseException
      */
-    public static String getFileList(String projectID) throws ParseException {
+    public static String getServerFileList(String projectID) throws ParseException {
         Client client = ClientBuilder.newClient();
-        String URL = "https://addons-ecs.forgesvc.net/api/v2/addon/"+projectID+"/files";
+        String URL = "https://addons-ecs.forgesvc.net/api/v2/addon/" + projectID + "/files";
         //System.out.println(URL);
         WebTarget target = client.target(URL);
         String response = target.request()
                 .get(String.class);
-        System.out.println(response);
+        //System.out.println(response);
         JSONArray jsonArray = (JSONArray) (new JSONParser().parse(response));
-
-
 
         System.out.println("Versions: ");
         System.out.println("NOTE! Versions are not in order. Please verify that you are choosing the correct version.");
         for ( int i = 1; i <= jsonArray.size(); i++ )
         {
             JSONObject curJSON = (JSONObject) jsonArray.get(i-1);
+            //System.out.println(curJSON.toJSONString());
             String fileName = ((String) curJSON.get("fileName"));
             String version = fileName.substring(0,fileName.length()-4);
             System.out.println( "\t" + String.format("%2d", i) + ": " + version);
@@ -176,7 +179,7 @@ public class NetworkTools {
         //System.out.println(( ((JSONObject)jsonArray.get(option-1)).get("serverPackFileId") ));
         if ( ( ((JSONObject)jsonArray.get(option-1)).get("serverPackFileId") ) == null)
         {
-            return null;
+            return "!" + ( ((JSONObject)jsonArray.get(option-1)).get("downloadUrl") );
         }
         return ((Long)((JSONObject)jsonArray.get(option-1)).get("serverPackFileId")).toString();
     }
@@ -252,6 +255,143 @@ public class NetworkTools {
         }
 
         return isSucceed;
+    }
+
+    public static void buildServerFiles(String clientURL) {
+        File tmpDirs = new File("./csd_tmp/mods/");
+        if (!tmpDirs.exists())
+        {
+            if (!tmpDirs.mkdirs())
+            {
+                return;
+            }
+        }
+
+        if(!saveFile(clientURL, "./csd_tmp/pack_tmp.zip"))
+        {
+            return;
+        }
+
+        String source = "./csd_tmp/pack_tmp.zip";
+        String destination = "./csd_tmp/pack_tmp/";
+
+        try {
+            ZipFile zipFile = new ZipFile(source);
+            zipFile.extractAll(destination);
+        } catch (ZipException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        new File("./csd_tmp/pack_tmp.zip").delete();
+
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = (JSONObject)(new JSONParser().parse(new FileReader("./csd_tmp/pack_tmp/manifest.json")));
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        JSONObject minecraftObject = (JSONObject)jsonObject.get("minecraft");
+        JSONArray  modloadersArray = (JSONArray)minecraftObject.get("modLoaders");
+        JSONObject forgeObject     = ((JSONObject)(modloadersArray.get(0)));
+
+        String minecraftVersion = minecraftObject.get("version").toString();
+        String forgeVersion = forgeObject.get("id").toString().substring(6);
+
+        System.out.println(minecraftVersion + " " + forgeVersion);
+
+        String forgeJarName = "forge-" + minecraftVersion + "-" + forgeVersion + "-installer.jar";
+
+        String minecraftForgeURL = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/" +
+                                    minecraftVersion + "-" + forgeVersion + "/"+forgeJarName;
+
+        if (!saveFile(minecraftForgeURL, "./csd_tmp/"+forgeJarName))
+        {
+            return;
+        }
+
+        Runtime rt = Runtime.getRuntime();
+        try {
+            final Process p = rt.exec("java -jar " + forgeJarName + " --installServer", null, new File("./csd_tmp/"));
+
+            new Thread(new Runnable() {
+                public void run() {
+                    BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    String line = null;
+
+                    try {
+                        while ((line = input.readLine()) != null)
+                            System.out.println(line);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
+            p.waitFor();
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        JSONArray filesArray = (JSONArray)jsonObject.get("files");
+        for (int i = 0; i < filesArray.size(); i++) {
+            JSONObject curObject = (JSONObject)(filesArray.get(i));
+            String projectID = curObject.get("projectID").toString();
+            String fileID = curObject.get("fileID").toString();
+
+            String downloadURL = NetworkTools.getCurseDownloadURL(projectID, fileID);
+            String[] splitURL = downloadURL.split("/");
+            String jarName = "./csd_tmp/mods/" + splitURL[splitURL.length - 1];
+            downloadURL = downloadURL.replace(" ", "%20");
+            saveFile(downloadURL, jarName);
+        }
+
+        File from = new File("./csd_tmp/pack_tmp/overrides/");
+        File to = new File("./csd_tmp/");
+        try
+        {
+            FileUtils.copyDirectory(from, to);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        try {
+            FileUtils.deleteDirectory(new File("./csd_tmp/pack_tmp"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            String[] splitURL = clientURL.split("/");
+
+            String zipName = "./" + splitURL[splitURL.length - 1];
+
+            ZipFile zipFile = new ZipFile(zipName);
+
+            String folderToAdd = "./csd_tmp/";
+
+            File[] files = new File(folderToAdd).listFiles();
+            assert files != null;
+            ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
+
+            ZipParameters parameters = new ZipParameters();
+
+            zipFile.addFiles(fileList);
+        } catch (ZipException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            FileUtils.deleteDirectory(new File ("./csd_tmp/"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

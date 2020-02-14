@@ -50,7 +50,7 @@ public class Controller {
         {
             try
             {
-                fileID = NetworkTools.getFileList(projectID);
+                fileID = NetworkTools.getServerFileList(projectID);
             }
             catch (ParseException e)
             {
@@ -64,14 +64,23 @@ public class Controller {
             }
         }
 
-        String downloadURL = NetworkTools.getCurseDownloadURL(projectID, fileID);
+        if ( fileID.charAt(0) == '!' )
+        {
+            String clientURL = fileID.substring(1);
+            //System.out.println(clientURL);
+            NetworkTools.buildServerFiles(clientURL);
+        }
+        else {
 
-        String[] splitURL = downloadURL.split("/");
+            String downloadURL = NetworkTools.getCurseDownloadURL(projectID, fileID);
 
-        String zipName = "./" + splitURL[splitURL.length-1];
+            String[] splitURL = downloadURL.split("/");
 
-        downloadURL = downloadURL.replace(" ", "%20");
+            String zipName = "./" + splitURL[splitURL.length - 1];
 
-        NetworkTools.saveFile(downloadURL, zipName);
+            downloadURL = downloadURL.replace(" ", "%20");
+
+            NetworkTools.saveFile(downloadURL, zipName);
+        }
     }
 }
