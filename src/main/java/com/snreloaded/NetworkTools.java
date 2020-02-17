@@ -2,8 +2,6 @@ package com.snreloaded;
 
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.util.Zip4jUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -312,29 +310,7 @@ public class NetworkTools {
             return;
         }
 
-        Runtime rt = Runtime.getRuntime();
-        try {
-            final Process p = rt.exec("java -jar " + forgeJarName + " --installServer", null, new File("./csd_tmp/"));
-
-            new Thread(new Runnable() {
-                public void run() {
-                    BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                    String line = null;
-
-                    try {
-                        while ((line = input.readLine()) != null)
-                            System.out.println(line);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-
-            p.waitFor();
-
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
+        FileTools.runScript("java -jar " + forgeJarName + " --installServer", "./csd_tmp/");
 
         JSONArray filesArray = (JSONArray)jsonObject.get("files");
         for (int i = 0; i < filesArray.size(); i++) {
@@ -367,22 +343,21 @@ public class NetworkTools {
         }
 
         try {
+            FileTools.createServerStart("./csd_tmp/", forgeJarName);
+            FileTools.createServerLoop("./csd_tmp/");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
             String[] splitURL = clientURL.split("/");
 
             String zipName = "./" + splitURL[splitURL.length - 1];
 
-            ZipFile zipFile = new ZipFile(zipName);
-
             String folderToAdd = "./csd_tmp/";
 
-            File[] files = new File(folderToAdd).listFiles();
-            assert files != null;
-            ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
-
-            ZipParameters parameters = new ZipParameters();
-
-            zipFile.addFiles(fileList);
-        } catch (ZipException e) {
+            FileTools.packZip(folderToAdd, zipName);
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
