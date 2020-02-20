@@ -8,54 +8,54 @@ public class ServerModBlacklist {
 
     public static void initBlacklist()
     {
-        blacklist.add("297038"); //CraftPresence (Client only)
-        blacklist.add("353051"); //GameMenuModOption (Client Only)
-        blacklist.add("331965"); //Enchanted Tooltips
-        blacklist.add("272515"); //Better Advancements - Client Only
-        blacklist.add("254441"); //Fancy Block Particles
-        blacklist.add("309318"); //Dynamic Surroundings HUDs
-        blacklist.add("289953"); //Client-side only
-        blacklist.add("332668"); //Enemyz - Skull above mobs
-        blacklist.add("247111"); //Requires The One Probe, which is already blacklisted.
-        blacklist.add("325492"); //Light Overlay
-        blacklist.add("334853"); //Discord Rich Presence
-        blacklist.add("320204"); //Mappy (1.14) - Client map mod.
-        blacklist.add("285684"); //Coloured Tooltips
-        blacklist.add("299080"); //Proportional Destruction Particles
-        blacklist.add("319264"); //Loading Screens
-        blacklist.add("285742"); //Smooth Fonts
-        blacklist.add("238747"); //Mod Name Tooltip, extends client-side tooltips.
-        blacklist.add("296468"); //NoFog - Removes client-side fog graphics.
-        blacklist.add("79287");  //Waila Harvestability
-        blacklist.add("254144"); //Client-side mod
-        blacklist.add("314002"); //Overloaded Armor Bar (Not req. Server Side)
-        blacklist.add("313252"); //Wasaila?
-        blacklist.add("284183"); //WaitingTime
-        blacklist.add("225125"); //Audio Death
-        blacklist.add("282313"); //TipTheScales
-        blacklist.add("271740"); //Toast Control
-        blacklist.add("282743"); //DiscordSuite
-        blacklist.add("236396"); //Mad-help - Client only
-        blacklist.add("292992"); //Modpack Configuration Checker - Tries to open a swing UI on the server
-        blacklist.add("226188"); //Default world generator - Client Only
-        blacklist.add("223094"); //Inventory Tweaks - Client only
-        blacklist.add("59489"); //Damage Indicators mod - Client only
-        blacklist.add("239236"); //Step Up - Client only
-        blacklist.add("225957"); //Hardcore Darkness - Client only
-        blacklist.add("227874"); //Dynamic Lights - Client only
-        blacklist.add("236484"); //Chunk animator - Client only
-        blacklist.add("238120"); //Ambience - Client only
-        blacklist.add("231404"); //Advanced capes - Client only
-        blacklist.add("226670"); //LLOverlayReloaded - [Overlays] Client-side-mod.
-        blacklist.add("229302"); //BetterLoadingScreen - [Loading Screen] Client-side-mod.
-        blacklist.add("232791"); //ITIT - It's the little things - [Java version checking, window resizing] Client-side-mod.
-        blacklist.add("243478"); //More Overlays - [NEI overlays] Client-side-mod.
-        blacklist.add("268324"); //Blur -[Rendering Effect] Client-side mod.
-        blacklist.add("238891"); //Dynamic Surroundings - Audio/rendering mod for clients.
-        blacklist.add("278476"); //Custom Cursor Mod - Changes the cursor on the client.
-        blacklist.add("228529"); //BetterFoliage: Changes the rendering of trees, leaves etc. Client-side-only.
-        blacklist.add("241964"); //Java Version Enforcer - Client side only, will cause player logon crashes if enabled server side.
-        blacklist.add("225928"); //Custom Backgrounds - Client Only
+        blacklist.add("297038");  //CraftPresence (Client only)
+        blacklist.add("353051");  //GameMenuModOption (Client Only)
+        blacklist.add("331965");  //Enchanted Tooltips
+        blacklist.add("272515");  //Better Advancements - Client Only
+        blacklist.add("254441");  //Fancy Block Particles
+        blacklist.add("309318");  //Dynamic Surroundings HUDs
+        blacklist.add("289953");  //Client-side only
+        blacklist.add("332668");  //Enemyz - Skull above mobs
+        blacklist.add("247111");  //Requires The One Probe, which is already blacklisted.
+        blacklist.add("325492");  //Light Overlay
+        blacklist.add("334853");  //Discord Rich Presence
+        blacklist.add("320204");  //Mappy (1.14) - Client map mod.
+        blacklist.add("285684");  //Coloured Tooltips
+        blacklist.add("299080");  //Proportional Destruction Particles
+        blacklist.add("319264");  //Loading Screens
+        blacklist.add("285742");  //Smooth Fonts
+        blacklist.add("238747");  //Mod Name Tooltip, extends client-side tooltips.
+        blacklist.add("296468");  //NoFog - Removes client-side fog graphics.
+        blacklist.add("79287");   //Waila Harvestability
+        blacklist.add("254144");  //Client-side mod
+        blacklist.add("314002");  //Overloaded Armor Bar (Not req. Server Side)
+        blacklist.add("313252");  //Wasaila?
+        blacklist.add("284183");  //WaitingTime
+        blacklist.add("225125");  //Audio Death
+        blacklist.add("282313");  //TipTheScales
+        blacklist.add("271740");  //Toast Control
+        blacklist.add("282743");  //DiscordSuite
+        blacklist.add("236396");  //Mad-help - Client only
+        blacklist.add("292992");  //Modpack Configuration Checker - Tries to open a swing UI on the server
+        blacklist.add("226188");  //Default world generator - Client Only
+        blacklist.add("223094");  //Inventory Tweaks - Client only
+        blacklist.add("59489");   //Damage Indicators mod - Client only
+        blacklist.add("239236");  //Step Up - Client only
+        blacklist.add("225957");  //Hardcore Darkness - Client only
+        blacklist.add("227874");  //Dynamic Lights - Client only
+        blacklist.add("236484");  //Chunk animator - Client only
+        blacklist.add("238120");  //Ambience - Client only
+        blacklist.add("231404");  //Advanced capes - Client only
+        blacklist.add("226670");  //LLOverlayReloaded - [Overlays] Client-side-mod.
+        blacklist.add("229302");  //BetterLoadingScreen - [Loading Screen] Client-side-mod.
+        blacklist.add("232791");  //ITIT - It's the little things - [Java version checking, window resizing] Client-side-mod.
+        blacklist.add("243478");  //More Overlays - [NEI overlays] Client-side-mod.
+        blacklist.add("268324");  //Blur -[Rendering Effect] Client-side mod.
+        blacklist.add("238891");  //Dynamic Surroundings - Audio/rendering mod for clients.
+        blacklist.add("278476");  //Custom Cursor Mod - Changes the cursor on the client.
+        blacklist.add("228529");  //BetterFoliage: Changes the rendering of trees, leaves etc. Client-side-only.
+        blacklist.add("241964");  //Java Version Enforcer - Client side only, will cause player logon crashes if enabled server side.
+        blacklist.add("225928");  //Custom Backgrounds - Client Only
         blacklist.add("263420");  //Xaero's Minimap - Client Only
         blacklist.add("233577");  //AutoRun - Older versions cause crash
         blacklist.add("226064");  //Twitch Notifier - Client Only
@@ -95,6 +95,10 @@ public class ServerModBlacklist {
         blacklist.add("226406");  //Custom Main Menu - Client Only
         blacklist.add("57829");   //TabbyChat - Client Only
         blacklist.add("232962");  //TabbyChat 2 - Client Only
+        blacklist.add("292899");  //ShulkerTooltip - Client Only
+        blacklist.add("356821");  //DynamicSurroundings: MobEffects - Client Only
+        blacklist.add("355671");  //DynamicSurroundings: SoundControl - Client Only
+        blacklist.add("284904");  //NoRecipeBook - Client Only
     }
 
     public static boolean contains(String id)
