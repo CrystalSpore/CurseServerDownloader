@@ -188,7 +188,7 @@ public class NetworkTools {
      * @param imgSavePath - path & name of file to save as
      * @return success status
      */
-    public static boolean saveFile(String imgURL, String imgSavePath) {
+    public static boolean saveFile(String imgURL, String imgSavePath, boolean silent) {
 
         boolean isSucceed = true;
 
@@ -221,7 +221,10 @@ public class NetworkTools {
                     byte buffer[] = new byte[524288];
 
                     // Read from server into buffer.
-                    System.out.println("Download:\n\t"+String.format("%10.2f",0.0)+"%");
+                    if (!silent)
+                    {
+                        System.out.println("Download:\n\t"+String.format("%10.2f",0.0)+"%");
+                    }
                     int lastSize = 2;
                     int byteContent;
                     double percent = 0;
@@ -229,26 +232,28 @@ public class NetworkTools {
                     while ((byteContent = inputStream.read(buffer, 0, 524288)) != -1) {
                         fout.write(buffer, 0, byteContent);
                         percent += (((double)byteContent)/size);
-                        if ( ctr == 2048 )
+                        if (!silent)
                         {
-                            String is = String.format("%10.2f", (percent*100));
-                            System.out.println("\t"+is+"%");
-                            ctr = 0;
+                            if ( ctr == 2048 )
+                            {
+                                String is = String.format("%10.2f", (percent*100));
+                                System.out.println("\t"+is+"%");
+                                ctr = 0;
+                            }
+                            ctr++;
                         }
-                        ctr++;
                     }
-                    System.out.println("\t"+String.format("%10.2f",100.00)+"%");
-                    System.out.println("Download is complete!");
+                    if (!silent)
+                    {
+                        System.out.println("\t"+String.format("%10.2f",100.00)+"%");
+                        System.out.println("Download is complete!");
+                    }
                 }
 
-            } catch (IOException e) {
-                isSucceed = false;
-            }
-            httpGet.releaseConnection();
-            try {
+                httpGet.releaseConnection();
                 httpClient.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                isSucceed = false;
             }
         }
 
@@ -265,7 +270,7 @@ public class NetworkTools {
             }
         }
 
-        if(!saveFile(clientURL, "./csd_tmp/pack_tmp.zip"))
+        if(!saveFile(clientURL, "./csd_tmp/pack_tmp.zip", false))
         {
             return;
         }
@@ -298,19 +303,21 @@ public class NetworkTools {
         String minecraftVersion = minecraftObject.get("version").toString();
         String forgeVersion = forgeObject.get("id").toString().substring(6);
 
-        System.out.println(minecraftVersion + " " + forgeVersion);
-
         String forgeJarName = "forge-" + minecraftVersion + "-" + forgeVersion + "-installer.jar";
 
         String minecraftForgeURL = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/" +
                                     minecraftVersion + "-" + forgeVersion + "/"+forgeJarName;
 
-        if (!saveFile(minecraftForgeURL, "./csd_tmp/"+forgeJarName))
+        if (!saveFile(minecraftForgeURL, "./csd_tmp/"+forgeJarName, false))
         {
             return;
         }
 
+        System.out.println("Installing Forge Server. Hold tight!");
         FileTools.runScript("java -jar " + forgeJarName + " --installServer", "./csd_tmp/");
+        System.out.println("Finished installing forge server.");
+
+        System.out.println("Now downloading mods. Please be patient (silencing output to prevent terminal spam)");
 
         JSONArray filesArray = (JSONArray)jsonObject.get("files");
         for (int i = 0; i < filesArray.size(); i++) {
@@ -318,12 +325,19 @@ public class NetworkTools {
             String projectID = curObject.get("projectID").toString();
             String fileID = curObject.get("fileID").toString();
 
+            if ( ServerModBlacklist.contains(projectID) ) //don't include problematic or client side only mods
+            {
+                continue;
+            }
+
             String downloadURL = NetworkTools.getCurseDownloadURL(projectID, fileID);
             String[] splitURL = downloadURL.split("/");
             String jarName = "./csd_tmp/mods/" + splitURL[splitURL.length - 1];
             downloadURL = downloadURL.replace(" ", "%20");
-            saveFile(downloadURL, jarName);
+            saveFile(downloadURL, jarName, true);
         }
+
+        System.out.println("Finished downloading mods!");
 
         File from = new File("./csd_tmp/pack_tmp/overrides/");
         File to = new File("./csd_tmp/");
@@ -353,6 +367,11 @@ public class NetworkTools {
             String[] splitURL = clientURL.split("/");
 
             String zipName = "./" + splitURL[splitURL.length - 1];
+
+            if ( new File(zipName).exists() )
+            {
+                new File(zipName).delete();
+            }
 
             String folderToAdd = "./csd_tmp/";
 

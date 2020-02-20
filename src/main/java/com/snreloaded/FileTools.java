@@ -71,8 +71,7 @@ public class FileTools {
                     String line = null;
 
                     try {
-                        while ((line = input.readLine()) != null)
-                            System.out.println(line);
+                        while ((line = input.readLine()) != null);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

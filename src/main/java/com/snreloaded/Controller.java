@@ -14,10 +14,10 @@ public class Controller {
         {
             System.err.println("Not enough arguments. Use this format:");
             System.err.println("\tCurseServerDownloader <CurseForgeLink>");
-            System.err.println("NOTE: You MUST use the link from the download page, not just the project page.\n" +
-                    "\tThis defines the file in specific that is requested");
             return;
         }
+
+        ServerModBlacklist.initBlacklist();
 
         String url = args[0];
 
@@ -80,7 +80,7 @@ public class Controller {
 
             downloadURL = downloadURL.replace(" ", "%20");
 
-            NetworkTools.saveFile(downloadURL, zipName);
+            NetworkTools.saveFile(downloadURL, zipName, false);
         }
     }
 }
