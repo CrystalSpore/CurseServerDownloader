@@ -1,5 +1,7 @@
 package com.snreloaded;
 
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FileUtils;
@@ -125,10 +127,10 @@ public class NetworkTools {
     }
 
     /**
-     * This method will get the server files download URL from the curseforge api
-     * @param projectID - value identifying which curseforge project we are looking at
+     * This method will get the server files download URL from the CurseForge api
+     * @param projectID - value identifying which CurseForge project we are looking at
      * @param fileID - value identifying the specific file that you wish to download
-     * @return
+     * @return DownloadURL as string
      */
     public static String getCurseDownloadURL(String projectID, String fileID)
     {
@@ -140,6 +142,17 @@ public class NetworkTools {
                 .get(String.class);
         client.close();
         return response;
+    }
+
+    static class FileNameJSONComp implements Comparator<JSONObject> {
+
+        @Override
+        public int compare(JSONObject o1, JSONObject o2) {
+            String left = (String) o1.get("fileName");
+            String right = (String) o2.get("fileName");
+            return left.compareTo(right);
+        }
+
     }
 
     /**
@@ -156,30 +169,47 @@ public class NetworkTools {
         WebTarget target = client.target(URL);
         String response = target.request()
                 .get(String.class);
+        client.close();
+
         //System.out.println(response);
         JSONArray jsonArray = (JSONArray) (new JSONParser().parse(response));
 
-        System.out.println("Versions: ");
-        System.out.println("NOTE! Versions are not in order. Please verify that you are choosing the correct version.");
-        for ( int i = 1; i <= jsonArray.size(); i++ )
+        ArrayList<JSONObject> sortedJSONarray = new ArrayList<>();
+        for ( int i = 0; i < jsonArray.size(); i++ )
         {
-            JSONObject curJSON = (JSONObject) jsonArray.get(i-1);
+            JSONObject curJSON = (JSONObject) jsonArray.get(i);
+            sortedJSONarray.add(curJSON);
+            System.out.println(curJSON);
+            System.out.println(curJSON.get("fileName"));
+        }
+
+        sortedJSONarray.sort(new FileNameJSONComp());
+
+        System.out.println(sortedJSONarray);
+
+        System.out.println("Versions: ");
+        System.out.println("NOTE! Versions may not be in order. Please verify that you are choosing the correct version.");
+
+        for ( int i = 1; i <= sortedJSONarray.size(); i++ )
+        {
+            JSONObject curJSON = sortedJSONarray.get(i-1);
             //System.out.println(curJSON.toJSONString());
             String fileName = ((String) curJSON.get("fileName"));
             String version = fileName.substring(0,fileName.length()-4);
             System.out.println( "\t" + String.format("%2d", i) + ": " + version);
         }
-        System.out.println("NOTE! Versions are not in order. Please verify that you are choosing the correct version.");
+
+        System.out.println("NOTE! Versions may not be in order. Please verify that you are choosing the correct version.");
         System.out.println("What version do you wish to download?");
         Scanner kin = new Scanner(System.in);
         int option = Integer.parseInt(kin.nextLine());
-        client.close();
+
         //System.out.println(( ((JSONObject)jsonArray.get(option-1)).get("serverPackFileId") ));
-        if ( ( ((JSONObject)jsonArray.get(option-1)).get("serverPackFileId") ) == null)
+        if ( ( (sortedJSONarray.get(option-1)).get("serverPackFileId") ) == null)
         {
-            return "!" + ( ((JSONObject)jsonArray.get(option-1)).get("downloadUrl") );
+            return "!" + ( (sortedJSONarray.get(option-1)).get("downloadUrl") );
         }
-        return ((Long)((JSONObject)jsonArray.get(option-1)).get("serverPackFileId")).toString();
+        return ((Long)(sortedJSONarray.get(option-1)).get("serverPackFileId")).toString();
     }
 
     /**
@@ -188,7 +218,7 @@ public class NetworkTools {
      * @param imgSavePath - path & name of file to save as
      * @return success status
      */
-    public static boolean saveFile(String imgURL, String imgSavePath, boolean silent) {
+    public static boolean saveFile(String imgURL, String imgSavePath) {
 
         boolean isSucceed = true;
 
@@ -217,36 +247,22 @@ public class NetworkTools {
                     BufferedInputStream inputStream = new BufferedInputStream(imageEntity.getContent());
                     URLConnection tempConnect = url.openConnection();
                     int size = tempConnect.getContentLength();
-                    FileOutputStream fout = new FileOutputStream(outputFile);
-                    byte buffer[] = new byte[524288];
+                    try (ProgressBar pb = new ProgressBarBuilder()
+                                        .setTaskName("Download")
+                                        .setInitialMax(size)
+                                        .setUpdateIntervalMillis(500)
+                                        .setUnit("MiB", 1048576)
+                                        .showSpeed()
+                                        .build()) {
+                        FileOutputStream fout = new FileOutputStream(outputFile);
+                        byte buffer[] = new byte[1024];
 
-                    // Read from server into buffer.
-                    if (!silent)
-                    {
-                        System.out.println("Download:\n\t"+String.format("%10.2f",0.0)+"%");
-                    }
-                    int lastSize = 2;
-                    int byteContent;
-                    double percent = 0;
-                    int ctr = 0;
-                    while ((byteContent = inputStream.read(buffer, 0, 524288)) != -1) {
-                        fout.write(buffer, 0, byteContent);
-                        percent += (((double)byteContent)/size);
-                        if (!silent)
-                        {
-                            if ( ctr == 2048 )
-                            {
-                                String is = String.format("%10.2f", (percent*100));
-                                System.out.println("\t"+is+"%");
-                                ctr = 0;
-                            }
-                            ctr++;
+                        int byteContent;
+                        while ((byteContent = inputStream.read(buffer, 0, 1024)) != -1) {
+                            fout.write(buffer, 0, byteContent);
+                            pb.stepBy(1024);
                         }
-                    }
-                    if (!silent)
-                    {
-                        System.out.println("\t"+String.format("%10.2f",100.00)+"%");
-                        System.out.println("Download is complete!");
+                        pb.stepTo(size);
                     }
                 }
 
@@ -270,7 +286,7 @@ public class NetworkTools {
             }
         }
 
-        if(!saveFile(clientURL, "./csd_tmp/pack_tmp.zip", false))
+        if(!saveFile(clientURL, "./csd_tmp/pack_tmp.zip"))
         {
             return;
         }
@@ -308,7 +324,7 @@ public class NetworkTools {
         String minecraftForgeURL = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/" +
                                     minecraftVersion + "-" + forgeVersion + "/"+forgeJarName;
 
-        if (!saveFile(minecraftForgeURL, "./csd_tmp/"+forgeJarName, false))
+        if (!saveFile(minecraftForgeURL, "./csd_tmp/"+forgeJarName))
         {
             return;
         }
@@ -334,7 +350,7 @@ public class NetworkTools {
             String[] splitURL = downloadURL.split("/");
             String jarName = "./csd_tmp/mods/" + splitURL[splitURL.length - 1];
             downloadURL = downloadURL.replace(" ", "%20");
-            saveFile(downloadURL, jarName, true);
+            saveFile(downloadURL, jarName);
         }
 
         System.out.println("Finished downloading mods!");

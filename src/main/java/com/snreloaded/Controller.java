@@ -80,7 +80,7 @@ public class Controller {
 
             downloadURL = downloadURL.replace(" ", "%20");
 
-            NetworkTools.saveFile(downloadURL, zipName, false);
+            NetworkTools.saveFile(downloadURL, zipName);
         }
     }
 }

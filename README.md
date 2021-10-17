@@ -13,4 +13,4 @@ Current usage allows for a full or partial server download url from CurseForge t
 
 `java -jar CurseServerDownloader <link>`
 
-If a full download url is provided, then the exact file gets downloaded. If a partial url is provided, then the user gets to select which version they wish to download (NOTE: versions are not in order. Please verify which version you wish to download.)
+If a full download url is provided, then the exact file gets downloaded. If a partial url is provided, then the user gets to select which version they wish to download (NOTE: versions may not be in order. Please verify which version you wish to download.)
