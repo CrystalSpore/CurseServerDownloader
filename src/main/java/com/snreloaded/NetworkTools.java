@@ -236,7 +236,7 @@ public class NetworkTools {
         
         if (isSucceed) {
             HttpGet httpGet = new HttpGet(url.toString());
-            httpGet.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.11 Safari/537.36");
+            httpGet.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36");
 
             try {
                 CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
